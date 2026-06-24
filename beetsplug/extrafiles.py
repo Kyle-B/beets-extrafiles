@@ -13,8 +13,8 @@ from typing import Any
 import beets.dbcore.db
 import beets.library
 import beets.plugins
-import beets.ui
 import beets.util.functemplate
+import beets.util.pathformats
 import mediafile
 from beets.util import FilesystemError
 from beets.util import MoveOperation
@@ -81,7 +81,7 @@ class ExtraFilesPlugin(beets.plugins.BeetsPlugin):
         self._hardlinked_items: set[tuple[Item, Path, Path]] = set()
         self._reflinked_items: set[tuple[Item, Path, Path]] = set()
         self._scanned_paths: set[Path] = set()
-        self.path_formats = beets.ui.get_path_formats(self.config["paths"])
+        self.path_formats = beets.util.pathformats.get_path_formats(self.config["paths"])
 
         self.register_listener("album_imported", self.on_album_imported)
         self.register_listener("item_moved", self.on_item_moved)
