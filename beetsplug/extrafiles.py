@@ -285,10 +285,10 @@ class ExtraFilesPlugin(beets.plugins.BeetsPlugin):
             return
 
         for category, patterns in self.config["patterns"].get(dict).items():  # type: ignore[generic]
-            for pattern in patterns:
-                # handle special case where patterns dictionary is a simple string instead of a list
-                if isinstance(patterns, str):
-                    patterns = [ patterns ]
+            # handle special case where patterns dictionary is a simple string instead of a list
+            pattern_list = [patterns] if isinstance(patterns, str) else patterns
+
+            for pattern in pattern_list:
                 for path in source.glob(pattern):
                     # Skip special dot directories (just in case)
                     if str(path) in (".", ".."):
@@ -322,12 +322,15 @@ class ExtraFilesPlugin(beets.plugins.BeetsPlugin):
             for_path=True,
         )
 
-        path_format: beets.util.functemplate.Template
-        path_format = next(
-            (path_format for query, path_format in self.path_formats if query == category),
+        # Find a matching path format, or use the default
+        for query, path_format_str in self.path_formats:  # noqa: B007
+            if query == category:
+                break
+        else:
             # No query matched; use original filename
-            beets.util.functemplate.Template("$albumpath/$filename"),
-        )
+            path_format_str = "$albumpath/$filename"
+
+        path_format = beets.util.functemplate.Template(path_format_str)
 
         # Get template funcs and evaluate against mapping
         funcs = beets.library.models.DefaultTemplateFunctions(None, None).functions()
